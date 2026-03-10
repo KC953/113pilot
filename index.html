@@ -83,7 +83,7 @@
                     <span>標竿指標：SRL 自我調節技能 (3.66)</span>
                 </div>
                 <h3 class="text-2xl font-black text-[#1e293b]">1. 全校預試構面平均得分分布</h3>
-                <p class="text-sm text-[#64748b]">計算方式：各構面填答平均分數 (滿分 5 分)</p>
+                <p class="text-sm text-[#64748b]">計算方式：N=198；各構面填答平均分數 (滿分 5 分)</p>
             </div>
 
             <div class="h-[300px] relative mb-4">
@@ -202,6 +202,26 @@
         lucide.createIcons();
         const labels = ['SRL (自我調節)', 'Satisfaction (滿意度)', 'Cognition (認知層級)', 'Efficacy (自我效能)', 'Engagement (學習投入)', 'CALP (學術語言)'];
         const scores = [3.66, 3.47, 3.40, 3.27, 3.16, 2.90];
+
+        // 長條圖數值標籤插件
+        const barLabelsPlugin = {
+            id: 'barLabels',
+            afterDatasetsDraw(chart) {
+                const { ctx, data, scales: { x, y } } = chart;
+                ctx.save();
+                ctx.font = 'bold 12px Noto Sans TC';
+                ctx.fillStyle = '#334155';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'middle';
+
+                data.datasets[0].data.forEach((value, i) => {
+                    const bar = chart.getDatasetMeta(0).data[i];
+                    ctx.fillText(value, bar.x + 5, bar.y);
+                });
+                ctx.restore();
+            }
+        };
+
         const ctxBar = document.getElementById('barChart').getContext('2d');
         new Chart(ctxBar, {
             type: 'bar',
@@ -223,8 +243,10 @@
                     x: { max: 5, grid: { display: false } },
                     y: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 12 } } }
                 }
-            }
+            },
+            plugins: [barLabelsPlugin]
         });
+
         const radarLabels = ['自我調節', '學術語言', '認知層級', '學習投入', '滿意度', '自我效能'];
         const radarScores = [3.66, 2.90, 3.40, 3.16, 3.47, 3.27];
         const ctxRadar = document.getElementById('radarChart').getContext('2d');
