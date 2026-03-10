@@ -1,0 +1,284 @@
+import React from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Cell, LabelList } from 'recharts';
+import { Target, Lightbulb, TrendingUp, ShieldCheck, Search, Users, Trophy } from 'lucide-react';
+
+const App = () => {
+  // 核心數據
+  const studyData = [
+    { name: 'SRL (自我調節)', score: 3.66, full: 5, color: '#475569' },
+    { name: 'Satisfaction (滿意度)', score: 3.47, full: 5, color: '#cbd5e1' },
+    { name: 'Cognition (認知層級)', score: 3.40, full: 5, color: '#cbd5e1' },
+    { name: 'Efficacy (自我效能)', score: 3.27, full: 5, color: '#cbd5e1' },
+    { name: 'Engagement (學習投入)', score: 3.16, full: 5, color: '#cbd5e1' },
+    { name: 'CALP (學術語言)', score: 2.90, full: 5, color: '#C49B9B' },
+  ];
+
+  const radarData = [
+    { subject: '自我調節', value: 3.66, fullMark: 4 },
+    { subject: '學術語言', value: 2.90, fullMark: 4 },
+    { subject: '認知層級', value: 3.40, fullMark: 4 },
+    { subject: '學習投入', value: 3.16, fullMark: 4 },
+    { subject: '滿意度', value: 3.47, fullMark: 4 },
+    { subject: '自我效能', value: 3.27, fullMark: 4 },
+  ];
+
+  // 自定義雷達圖數值標籤，確保標籤永遠是正向（不旋轉）
+  const renderRadarLabel = (props) => {
+    const { x, y, value } = props;
+    return (
+      <text 
+        x={x} 
+        y={y - 10} 
+        fill="#0f172a" 
+        textAnchor="middle" 
+        style={{ fontWeight: 'bold', fontSize: '14px' }}
+      >
+        {value}
+      </text>
+    );
+  };
+
+  // 仿 HTML 的 SectionHeader
+  const SectionHeader = ({ title, benchmark, icon: Icon, formula }) => (
+    <div className="mb-6">
+      <div className="flex items-center gap-2 text-[#f59e0b] font-bold mb-1">
+        <Trophy size={18} />
+        <span className="text-[17px]">標竿指標：{benchmark}</span>
+      </div>
+      <h3 className="text-[22px] font-[800] text-[#1e293b] mb-1">{title}</h3>
+      {formula && <p className="text-[14px] text-[#64748b] mb-4">{formula}</p>}
+    </div>
+  );
+
+  // 仿 HTML 的 analysis-box 樣式
+  const AnalysisBox = ({ title, children }) => (
+    <div className="bg-[#9BADC1]/10 border-l-[6px] border-[#9BADC1] rounded-[12px] p-[18px] mt-6 text-justify">
+      <span className="font-[900] text-[19px] block text-[#0f172a] mb-[6px]">{title}</span>
+      <div className="text-[16.5px] column-gap-1 leading-[1.65] text-[#334155] space-y-4">
+        {children}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#f1f5f9] p-4 md:p-10 font-['Microsoft_JhengHei',_sans-serif]">
+      {/* 介面操作按鈕 - 仿 HTML no-print */}
+      <div className="fixed top-5 right-5 z-50">
+        <button onClick={() => window.print()} className="bg-[#0f172a] text-white px-6 py-3 rounded-lg font-bold shadow-lg hover:bg-[#334155] transition-colors">
+          下載 PDF / 列印報告
+        </button>
+      </div>
+
+      <div className="max-w-[900px] mx-auto">
+        {/* Header - 仿 HTML header */}
+        <div className="text-center mb-[15px] border-bottom-[4px] border-[#D6C9B7] pb-[10px] border-b-[4px]">
+          <span className="bg-[#8697A8] text-white px-[15px] py-[5px] rounded-[20px] text-[14px] font-bold tracking-wider uppercase">
+            EMI Promotion Performance Report (Pilot Study)
+          </span>
+          <h1 className="text-[30px] font-bold text-[#0f172a] my-[6px]">114學年度全校性 EMI 素養預試調查分析</h1>
+          <p className="text-[18px] text-[#334155] font-bold">國立臺灣科技大學雙語教育推動辦公室</p>
+        </div>
+
+        {/* 1. Bar Chart Card */}
+        <div className="bg-white border-[1.5px] border-[#e2e8f0] rounded-[15px] p-[25px] mb-[35px] shadow-sm">
+          <SectionHeader 
+            title="1. 全校預試構面平均得分分布" 
+            benchmark="SRL 自我調節技能 (3.66)" 
+            formula="計算方式：各構面填答平均分數 (滿分 5 分)"
+          />
+          <div className="h-[400px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart 
+                data={studyData} 
+                layout="vertical" 
+                margin={{ left: 60, right: 60, top: 10, bottom: 10 }}
+              >
+                <XAxis type="number" domain={[0, 5]} hide />
+                <YAxis 
+                  dataKey="name" 
+                  type="category" 
+                  width={140} 
+                  tick={{ fill: '#0f172a', fontWeight: 'bold', fontSize: 15 }} 
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Bar dataKey="score" radius={[4, 4, 4, 4]} barSize={26}>
+                  {studyData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                  <LabelList 
+                    dataKey="score" 
+                    position="right" 
+                    style={{ fill: '#334155', fontWeight: 800, fontSize: '16px' }} 
+                  />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <AnalysisBox title="數據解析與全校推動建議">
+            <p>
+              從全校預試得分分布來看，<strong>自我調節學習技能 (SRL, 3.66)</strong> 與 <strong>課程整體滿意度 (3.47)</strong> 呈現最高比例，反映出學生在全校性的 EMI 環境下，普遍具備良好的自主學習動能與正向接納態度。
+            </p>
+            <p>
+              然而，<span className="font-bold text-[#e15759]">認知學術語言能力 (CALP, 2.90)</span> 為目前全校性之關鍵弱項指標。數據明確呈現「高意願、低工具力」的初期轉型特徵，顯示全校學生雖有學習熱忱，但在實際運用英語組織專業論點時仍遭遇顯著障礙。
+            </p>
+            <p>
+              <strong>推動建議：</strong>下一階段應由全校層級落實教育部強調的「質的深化」，導入各專業領域通用的 EMI Scaffolding（如核心詞彙庫、多模態輔助教材），以銜接全校學生的 SRL 優勢動能。
+            </p>
+          </AnalysisBox>
+        </div>
+
+        {/* 2. QA Refinement Card */}
+        <div className="bg-white border-[1.5px] border-[#e2e8f0] rounded-[15px] p-[25px] mb-[35px] shadow-sm">
+          <SectionHeader title="2. 調查指標精煉與品保機制說明" benchmark="教育部品保對接" />
+          <div className="flex flex-col md:flex-row gap-8 items-center py-4">
+            <div className="flex-1 space-y-4">
+              <div className="p-4 bg-[#fef08a]/30 border-l-4 border-[#f59e0b] rounded-r-lg">
+                <p className="text-[#854d0e] font-bold italic">
+                  "經全校性預試樣本執行因素分析 (EFA)，發現 Satisfaction 構面數據趨向重疊，為確保品保指標之精準度，決定正式問卷予以調整。"
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-[#f1f5f9] p-3 rounded-lg text-center border border-[#e2e8f0]">
+                  <p className="text-[#0f172a] font-black text-lg">效度優化</p>
+                  <p className="text-xs text-[#64748b]">全校數據精度提升</p>
+                </div>
+                <div className="bg-[#f1f5f9] p-3 rounded-lg text-center border border-[#e2e8f0]">
+                  <p className="text-[#0f172a] font-black text-lg">精準監控</p>
+                  <p className="text-xs text-[#64748b]">聚焦核心 CALP 表現</p>
+                </div>
+              </div>
+            </div>
+            <div className="w-full md:w-[300px] p-6 border-2 border-dashed border-[#e2e8f0] rounded-[20px] text-center bg-white">
+              <Search className="mx-auto text-[#cbd5e1] mb-2" size={40} />
+              <span className="rank-badge mb-3">正式問卷指標優化</span>
+              <div className="flex flex-wrap justify-center gap-2 mt-2">
+                <span className="bg-red-100 text-red-400 px-2 py-1 rounded line-through text-xs font-bold">Satisfaction</span>
+                <span className="bg-[#0f172a] text-white px-2 py-1 rounded text-xs font-bold">CALP 診斷</span>
+                <span className="bg-[#0f172a] text-white px-2 py-1 rounded text-xs font-bold">SRL 追蹤</span>
+              </div>
+            </div>
+          </div>
+          <AnalysisBox title="全校品保策略解析">
+            <p>
+              依據校級品保自訂指標，本計畫透過全校性預試進行測量工具之嚴謹化。由於滿意度指標與學生的認知行為能力具高度相關，為精簡施測程序並提升數據信度，<strong>正式階段將核心指標調整至「認知行為」與「學術語言效能」</strong>。
+            </p>
+            <p>
+              此項調整體現了全校 EMI 推動由「一般反應調查」轉向「深度學習成效監控」的品質深化。未來全校性數據回饋將更具診斷價值，能精準辨識全校在教學轉型過程中的成熟軌跡。
+            </p>
+          </AnalysisBox>
+        </div>
+
+        {/* 3. Radar Chart Card */}
+        <div id="radar-page" className="bg-white border-[1.5px] border-[#e2e8f0] rounded-[15px] p-[12px] mb-[35px] shadow-sm">
+          <div className="p-[13px]">
+            <SectionHeader title="3. 全校學生 EMI 體質雷達診斷" benchmark="六大維度均衡度觀察" />
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="flex-1 h-[420px] relative">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                    <PolarGrid stroke="#e2e8f0" />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: '#0f172a', fontWeight: 900, fontSize: 13 }} />
+                    <PolarRadiusAxis domain={[0, 4.5]} tick={false} axisLine={false} />
+                    
+                    {/* 目標基準線調整為 4.0 */}
+                    <Radar
+                      name="全校目標基準 (4.0)"
+                      dataKey="fullMark"
+                      stroke="#C49B9B"
+                      strokeWidth={2}
+                      strokeDasharray="4 4"
+                      fill="transparent"
+                    />
+                    
+                    {/* 使用自定義渲染標籤，確保標籤永遠垂直呈現 */}
+                    <Radar
+                      name="全校學生現況"
+                      dataKey="value"
+                      stroke="#9BADC1"
+                      strokeWidth={3}
+                      fill="rgba(155, 173, 193, 0.6)"
+                    >
+                      <LabelList 
+                        dataKey="value" 
+                        content={renderRadarLabel}
+                      />
+                    </Radar>
+                  </RadarChart>
+                </ResponsiveContainer>
+                <div className="flex justify-center gap-6 text-[12px] font-bold -mt-8 relative z-10">
+                  <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#9BADC1]/60 border border-[#9BADC1]"></div>預試現況</div>
+                  <div className="flex items-center gap-2"><div className="w-3 h-3 border-2 border-dashed border-[#C49B9B]"></div>目標基準 (4.0)</div>
+                </div>
+              </div>
+              <div className="flex-1 space-y-4 p-4">
+                <div className="bg-white border border-[#e2e8f0] p-4 rounded-xl shadow-sm">
+                  <span className="font-black text-[#0f172a] block border-b pb-2 mb-3 tracking-wider">全校整體成熟度診斷</span>
+                  <ul className="space-y-3 text-[14.5px] text-[#475569]">
+                    <li className="flex gap-2">
+                      <div className="w-1.5 h-1.5 bg-[#0f172a] rounded-full mt-2 shrink-0"></div>
+                      <p><strong>自我調節 (3.66) 領先：</strong>展現均衡穩健的自主學習基礎，為推動 EMI 轉型的最強體質特徵。</p>
+                    </li>
+                    <li className="flex gap-2">
+                      <div className="w-1.5 h-1.5 bg-[#e15759] rounded-full mt-2 shrink-0"></div>
+                      <p><strong>學術語言 (2.90) 收縮：</strong>學術英語轉化能力為目前體質中最弱一環，反映轉型成熟節奏受限。</p>
+                    </li>
+                    <li className="flex gap-2">
+                      <div className="w-1.5 h-1.5 bg-slate-400 rounded-full mt-2 shrink-0"></div>
+                      <p><strong>全校穩定適應型：</strong>整體雷達面積顯示推動節奏正逐步形成優勢，而非單一指標之競爭。</p>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <AnalysisBox title="綜合體質分析與長期建議">
+              <p>
+                全校雷達圖呈現之均衡度顯示學生目前正處於「高學習意願、高語言門檻」的轉型交界期。<strong>全校各專業領域</strong> 應同步提升課程占比與制度連動，並非僅是數據上的績效競逐，而是成熟節奏與教學制度整合的綜合映射。
+              </p>
+              <p>
+                後續可透過全校性優弱構面辨識與補強，使強項擴散、弱項改善，支持 EMI 體質邁向更穩定的均衡發展。推動重點應聚焦於持續蒐集預試資料回饋，再導入全校性觀課共備機制，最後串接品保流程，逐步累積校內的教學支持體質。
+              </p>
+            </AnalysisBox>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center py-8 text-slate-400 font-bold text-xs uppercase tracking-[0.2em]">
+          National Taiwan University of Science and Technology - EMI Office
+          <div className="flex justify-center gap-4 mt-2 opacity-30 italic">
+            <span>Whole-School diagnosis</span>
+            <span>•</span>
+            <span>Systematic refinement</span>
+            <span>•</span>
+            <span>Quality maturity</span>
+          </div>
+        </div>
+      </div>
+
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          .no-print { display: none !important; }
+          body { background-color: white !important; padding: 0 !important; }
+          .max-w-[900px] { max-width: 100% !important; margin: 0 !important; }
+          .card, .bg-white { 
+            box-shadow: none !important; 
+            border: 1px solid #e2e8f0 !important;
+            break-after: page; 
+            page-break-after: always;
+            margin-bottom: 20px !important;
+          }
+        }
+        .rank-badge {
+          background-color: #0f172a;
+          color: white;
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-size: 12px;
+          display: inline-block;
+        }
+      `}} />
+    </div>
+  );
+};
+
+export default App;
