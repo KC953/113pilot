@@ -18,6 +18,9 @@
             background-color: #f1f5f9;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         .analysis-box {
@@ -53,6 +56,12 @@
             h1, h3 {
                 break-after: avoid;
             }
+        }
+
+        /* 針對畫布渲染進行優化 */
+        canvas {
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
     </style>
 </head>
@@ -199,6 +208,9 @@
     </div>
 
     <script>
+        // 設定全域渲染倍率，解決 PDF 模糊問題
+        Chart.defaults.devicePixelRatio = 3;
+
         lucide.createIcons();
         const labels = ['SRL (自我調節)', 'Satisfaction (滿意度)', 'Cognition (認知層級)', 'Efficacy (自我效能)', 'Engagement (學習投入)', 'CALP (學術語言)'];
         const scores = [3.66, 3.47, 3.40, 3.27, 3.16, 2.90];
@@ -238,7 +250,10 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 indexAxis: 'y',
-                plugins: { legend: { display: false } },
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: { enabled: true }
+                },
                 scales: {
                     x: { max: 5, grid: { display: false } },
                     y: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 14 } } }
@@ -297,10 +312,10 @@
                         min: 0,
                         max: 4.5,
                         ticks: { display: false },
-                        pointLabels: { font: { size: 14, weight: 'bold' } }
+                        pointLabels: { font: { size: 14, weight: 'bold' }, color: '#0f172a' }
                     }
                 },
-                plugins: { legend: { position: 'bottom' } }
+                plugins: { legend: { position: 'bottom', labels: { font: { size: 14, weight: 'bold' } } } }
             },
             plugins: [customDataLabels]
         });
