@@ -28,7 +28,7 @@
             border-left: 6px solid #9BADC1;
         }
 
-        /* 修正分頁與跨頁裁切問題 */
+        /* 修正分頁與跨頁裁切問題並優化列印品質 */
         @media print {
             @page {
                 size: A4;
@@ -38,9 +38,10 @@
             body { background-color: white !important; padding: 0 !important; }
             .max-w-[900px] { max-width: 100% !important; width: 100% !important; }
             
-            /* 強制區塊不要在內部斷開 */
-            .card { 
+            /* 強制移除所有陰影，避免 PDF 產生渲染雜訊 */
+            .card, .shadow-sm, .shadow-lg, canvas { 
                 box-shadow: none !important; 
+                filter: none !important;
                 border: 1px solid #e2e8f0 !important; 
                 break-inside: avoid; 
                 page-break-inside: avoid;
@@ -52,16 +53,16 @@
                 page-break-inside: avoid;
             }
 
-            /* 避免標題後方直接斷頁 */
             h1, h3 {
                 break-after: avoid;
             }
         }
 
-        /* 針對畫布渲染進行優化 */
+        /* 針對畫布渲染進行銳利化優化 */
         canvas {
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
+            -ms-interpolation-mode: nearest-neighbor;
         }
     </style>
 </head>
@@ -195,11 +196,9 @@
 
             <div class="analysis-box rounded-xl p-5 mt-6 text-justify">
                 <span class="font-black text-xl block text-[#0f172a] mb-2">綜合體質分析與長期建議</span>
-                <div class="text-[18.5px] leading-relaxed text-[#334155] space-y-4">
-                    <p>
-                        <span style="font-weight: bold; color: #D48466;">本校相信學生的各方面學習素養能力比學業成績更能反映 EMI 學習與未來職場專業發展狀況，特開發此調查工具。</span>此次 EMI 學習素養預施測之雷達圖體質顯示學生整體能力結構相對均衡，反映本校 EMI 推動已逐步建立穩定的學習基礎。其中，自我調節能力（SRL, 3.66）為最具優勢之構面，顯示學生已具備良好的自主學習策略與學習動能；認知層級（3.40）、滿意度（3.47）與自我效能（3.27）亦維持中等以上水準，顯示學生對 EMI 學習模式已逐步形成適應。然而，認知學術語言能力（CALP, 2.90）仍為整體能力結構中相對較弱的一環，反映學生在以英語進行專業概念理解與學術論述表達時仍面臨一定門檻。整體而言，本校學生呈現「高學習意願、學術語言能力待強化」的轉型特徵，未來 EMI 推動策略宜由課程量能擴展逐步邁向教育部所強調之「質的深化」，透過強化學術語言支持與教學支援機制，逐步提升學生於 EMI 環境中的專業學習表現。
-                    </p>
-                </div>
+                <p class="text-[18.5px] leading-relaxed text-[#334155]">
+                    <span style="font-weight: bold; color: #D48466;">本校相信學生的各方面學習素養能力比學業成績更能反映 EMI 學習與未來職場專業發展狀況，特開發此調查工具。</span>此次 EMI 學習素養預施測之雷達圖體質顯示學生整體能力結構相對均衡，反映本校 EMI 推動已逐步建立穩定的學習基礎。其中，自我調節能力（SRL, 3.66）為最具優勢之構面，顯示學生已具備良好的自主學習策略與學習動能；認知層級（3.40）、滿意度（3.47）與自我效能（3.27）亦維持中等以上水準，顯示學生對 EMI 學習模式已逐步形成適應。然而，認知學術語言能力（CALP, 2.90）仍為整體能力結構中相對較弱的一環，反映學生在以英語進行專業概念理解與學術論述表達時仍面臨一定門檻。整體而言，本校學生呈現「高學習意願、學術語言能力待強化」的轉型特徵，未來 EMI 推動策略宜由課程量能擴展逐步邁向教育部所強調之「質的深化」，透過強化學術語言支持與教學支援機制，逐步提升學生於 EMI 環境中的專業學習表現。
+                </p>
             </div>
         </div>
 
@@ -210,14 +209,15 @@
     </div>
 
     <script>
-        // 設定全域渲染倍率，解決 PDF 模糊問題
-        Chart.defaults.devicePixelRatio = 3;
+        // 設定極高渲染倍率，解決 PDF 模糊與陰影問題
+        Chart.defaults.devicePixelRatio = 4;
+        Chart.defaults.animation = false; // 關閉動畫，確保列印時渲染完整
+        Chart.defaults.plugins.tooltip.enabled = false; // 關閉工具提示，避免產生額外渲染層影
 
         lucide.createIcons();
         const labels = ['SRL (自我調節)', 'Satisfaction (滿意度)', 'Cognition (認知層級)', 'Efficacy (自我效能)', 'Engagement (學習投入)', 'CALP (學術語言)'];
         const scores = [3.66, 3.47, 3.40, 3.27, 3.16, 2.90];
 
-        // 長條圖數值標籤插件 (放大至 14px)
         const barLabelsPlugin = {
             id: 'barLabels',
             afterDatasetsDraw(chart) {
@@ -227,10 +227,9 @@
                 ctx.fillStyle = '#334155';
                 ctx.textAlign = 'left';
                 ctx.textBaseline = 'middle';
-
                 data.datasets[0].data.forEach((value, i) => {
                     const bar = chart.getDatasetMeta(0).data[i];
-                    ctx.fillText(value, bar.x + 5, bar.y);
+                    ctx.fillText(value.toFixed(2), bar.x + 8, bar.y); // 稍微增加偏移，避免與條形重疊
                 });
                 ctx.restore();
             }
@@ -244,7 +243,7 @@
                 datasets: [{
                     data: scores,
                     backgroundColor: ['#475569', '#cbd5e1', '#cbd5e1', '#cbd5e1', '#cbd5e1', '#C49B9B'],
-                    borderRadius: 5,
+                    borderRadius: 0, // 移除圓角，避免 PDF 渲染產生邊緣模糊陰影
                     barThickness: 20
                 }]
             },
@@ -252,13 +251,17 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 indexAxis: 'y',
-                plugins: { 
-                    legend: { display: false },
-                    tooltip: { enabled: true }
-                },
+                plugins: { legend: { display: false } },
                 scales: {
-                    x: { max: 5, grid: { display: false } },
-                    y: { grid: { display: false }, ticks: { font: { weight: 'bold', size: 14 } } }
+                    x: { 
+                        max: 5, 
+                        grid: { display: false },
+                        ticks: { font: { weight: 'bold', size: 12 } }
+                    },
+                    y: { 
+                        grid: { display: false }, 
+                        ticks: { font: { weight: 'bold', size: 14 }, color: '#0f172a' } 
+                    }
                 }
             },
             plugins: [barLabelsPlugin]
@@ -277,7 +280,7 @@
                     ctx.font = 'bold 14px Noto Sans TC';
                     ctx.fillStyle = '#0f172a';
                     ctx.textAlign = 'center';
-                    ctx.fillText(value, point.x, point.y - 12);
+                    ctx.fillText(value.toFixed(2), point.x, point.y - 12);
                     ctx.restore();
                 });
             }
@@ -290,16 +293,17 @@
                     {
                         label: '全校學生現況',
                         data: radarScores,
-                        backgroundColor: 'rgba(155, 173, 193, 0.4)',
+                        backgroundColor: 'rgba(155, 173, 193, 0.35)', // 稍微調降透明度增加清晰度
                         borderColor: '#9BADC1',
                         borderWidth: 2,
-                        pointBackgroundColor: '#9BADC1'
+                        pointBackgroundColor: '#9BADC1',
+                        pointRadius: 3
                     },
                     {
                         label: '目標基準 (4.0)',
                         data: [4, 4, 4, 4, 4, 4],
                         borderColor: '#C49B9B',
-                        borderWidth: 1,
+                        borderWidth: 1.5,
                         borderDash: [5, 5],
                         fill: false,
                         pointRadius: 0
@@ -314,10 +318,18 @@
                         min: 0,
                         max: 4.5,
                         ticks: { display: false },
-                        pointLabels: { font: { size: 14, weight: 'bold' }, color: '#0f172a' }
+                        pointLabels: { 
+                            font: { size: 14, weight: 'bold' },
+                            color: '#0f172a'
+                        }
                     }
                 },
-                plugins: { legend: { position: 'bottom', labels: { font: { size: 14, weight: 'bold' } } } }
+                plugins: { 
+                    legend: { 
+                        position: 'bottom',
+                        labels: { font: { weight: 'bold', size: 13 } }
+                    } 
+                }
             },
             plugins: [customDataLabels]
         });
